@@ -24,7 +24,15 @@ if (isset($_GET["mssql"])) {
 			}
 
 			function connect($server, $username, $password) {
-				$this->_link = @sqlsrv_connect($server, array("UID" => $username, "PWD" => $password, "CharacterSet" => "UTF-8"));
+                $connectionInfo = array(
+                    "UID" => $username,
+                    "PWD" => $password,
+                    "CharacterSet" => "UTF-8"
+                );
+                if (isset($_GET["db"])) {
+                    $connectionInfo["Database"] = $_GET["db"];
+                }
+                $this->_link = @sqlsrv_connect($server, $connectionInfo);
 				if ($this->_link) {
 					$info = sqlsrv_server_info($this->_link);
 					$this->server_info = $info['SQLServerVersion'];
@@ -239,7 +247,11 @@ if (isset($_GET["mssql"])) {
 			var $extension = "PDO_DBLIB";
 
 			function connect($server, $username, $password) {
-				$this->dsn("dblib:charset=utf8;host=" . str_replace(":", ";unix_socket=", preg_replace('~:(\\d)~', ';port=\\1', $server)), $username, $password);
+                $dbname = "";
+                if (isset($_GET["db"])) {
+                    $dbname = "dbname=" . $_GET["db"] . ";";
+                }
+				$this->dsn("dblib:charset=utf8;${dbname}host=" . str_replace(":", ";unix_socket=", preg_replace('~:(\\d)~', ';port=\\1', $server)), $username, $password);
 				return true;
 			}
 
